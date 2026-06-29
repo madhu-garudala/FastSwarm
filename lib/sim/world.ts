@@ -132,6 +132,7 @@ export function applyDecisions(world: World, living: Agent[], decisions: Decisio
       cell.food -= amount;
       agent.energy = clamp(agent.energy + amount * 2, 0, 14);
       agent.inventory = clamp(agent.inventory + Math.max(0, amount - 1), 0, 9);
+      if (events.length < 4) events.push({ tick: world.tickIndex + 1, message: `agent ${agent.id} gathered food at ${agent.x},${agent.y}` });
     } else if (decision.action === "claim" && agent.energy > 2) {
       cell.owner = agent.faction;
       agent.energy -= 1;
@@ -143,9 +144,12 @@ export function applyDecisions(world: World, living: Agent[], decisions: Decisio
       const key = `${x},${y}`;
       if (!occupied.has(key)) {
         occupied.delete(`${agent.x},${agent.y}`);
+        const fromX = agent.x;
+        const fromY = agent.y;
         agent.x = x;
         agent.y = y;
         occupied.set(key, agent.id);
+        if (events.length < 4) events.push({ tick: world.tickIndex + 1, message: `agent ${agent.id} moved ${decision.dir} from ${fromX},${fromY}` });
       }
     } else if (decision.action === "rest") {
       agent.energy = clamp(agent.energy + 1, 0, 14);
@@ -179,7 +183,10 @@ export function applyDecisions(world: World, living: Agent[], decisions: Decisio
   next.avgTickMs = Math.round(history.reduce((sum, value) => sum + value, 0) / history.length);
   next.tickHistory = history.map(Math.round);
   next.backend = backend;
-  next.events = [...world.events, ...events].slice(-10);
+  if (events.length === 0 && world.tickIndex === 0) {
+    events.push({ tick: 1, message: `${living.length} agents woke up and scanned for food` });
+  }
+  next.events = [...world.events, ...events].slice(-12);
   next.noKey = !process.env.CEREBRAS_API_KEY;
   next.baselineReady = Boolean(process.env.BASELINE_API_KEY && process.env.BASELINE_BASE_URL && process.env.BASELINE_MODEL);
   return next;

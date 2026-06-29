@@ -142,8 +142,14 @@ export default function Home() {
             </div>
 
             <div className="mt-6 space-y-2 text-sm text-slate-300">
-              <div className="font-bold text-slate-100">Event log</div>
-              {(world?.events ?? []).slice(-6).reverse().map((event, index) => <div key={`${event.tick}-${index}`} className="rounded-xl bg-white/5 px-3 py-2">#{event.tick} {event.message}</div>)}
+              <div className="flex items-center justify-between font-bold text-slate-100">
+                <span>Event log</span>
+                <span className="text-xs font-normal text-slate-400">latest first</span>
+              </div>
+              {(world?.events?.length ?? 0) === 0 ? (
+                <div className="rounded-xl border border-dashed border-white/15 bg-white/5 px-3 py-3 text-slate-400">Press Start or Step to generate swarm events.</div>
+              ) : null}
+              {(world?.events ?? []).slice(-8).reverse().map((event, index) => <div key={`${event.tick}-${index}`} className="rounded-xl bg-white/5 px-3 py-2">#{event.tick} {event.message}</div>)}
             </div>
           </aside>
         </section>
